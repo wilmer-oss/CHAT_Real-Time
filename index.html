@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      * {
+        color-scheme: light dark;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      .client {
+        width: 40%;
+        height: 80vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 3%;
+        align-items: center;
+        margin: 10px auto;
+        background: #070707;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .messages {
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        gap: 5px;
+        flex-direction: column;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+      }
+
+      .message {
+        width: max-content;
+        max-width: 80%;
+        word-wrap: break-word;
+        display: flex;
+        list-style-type: none;
+        font-family: cursive;
+        padding: 3px 10px;
+        font-size: 18px;
+        border: 1px solid rgba(142, 142, 168, 0.651);
+        color: white;
+      }
+
+      small:first {
+        font-weight: bold;
+        font-size: 12 px;
+      }
+      small:last-of-type {
+        font-size: 11px;
+      }
+
+      .you {
+        align-self: flex-end;
+        background-color: rgba(61, 106, 231, 0.644);
+        border-top-right-radius: 20px;
+        border-top-left-radius: 20px;
+        border-bottom-left-radius: 20px;
+      }
+      .others {
+        align-self: flex-start;
+        background-color: rgba(58, 54, 52, 0.644);
+        border-top-right-radius: 20px;
+        border-top-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+      }
+
+      .form {
+        margin-top: 6px;
+        display: flex;
+        bottom: 0%;
+        width: 100%;
+        gap: 5px;
+        height: 9%;
+      }
+      .input {
+        min-width: 85%;
+        outline: rgb(155, 150, 150);
+        border-radius: 20px;
+        font-family: cursive;
+        font-size: 18px;
+        flex-grow: 1;
+        text-align: center;
+        outline: none;
+        border: 1px solid;
+      }
+      input::placeholder {
+        font-size: 15px;
+      }
+
+      .send {
+        background-color: rgb(19, 119, 212);
+        color: whrgb(255, 255, 255);
+        width: 10%;
+        border-radius: 20px;
+        border: none;
+        cursor: pointer;
+        font-family: cursive;
+        font-size: 10px;
+        text-align: center;
+      }
+
+      @media (max-width: 700px) {
+        .client {
+          width: 100%;
+          margin: 0, 0;
+          height: 100vh;
+        }
+        .messages {
+          gap: 3px;
+        }
+
+        .message {
+          padding: 3px 6px;
+          font-size: 14px;
+        }
+
+        small:first {
+          font-weight: bold;
+          font-size: 11 px;
+        }
+        small:last-of-type {
+          font-size: 11px;
+        }
+      }
+    </style>
+    <title>chat</title>
+    <script type="module">
+      import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
+      let user;
+
+      if (localStorage.length == 0) {
+        user = prompt("como te llamas?");
+        localStorage.setItem("user", user);
+      } else {
+        user = localStorage.getItem("user");
+      }
+
+      const socket = io({
+        auth: {
+          username: user,
+          serverOffset: 0,
+        },
+      });
+      const timeMessage = new Date().toLocaleString().split(",")[1];
+      const form = document.querySelector(".form");
+      const input = document.querySelector(".form input");
+      const messages = document.querySelector(".messages");
+      const client = document.querySelector(".client");
+
+      socket.on("chat message", (msg, serverOffset, username, time) => {
+        const item = document.createElement("span");
+        const message = document.createElement("p");
+        const userName = document.createElement("small");
+        const timeInfo = document.createElement("small");
+        timeInfo.textContent = time;
+        message.textContent = msg;
+        userName.textContent = username;
+        if (socket.auth.username == username) {
+          item.classList.add("you");
+        } else {
+          item.classList.add("others");
+        }
+        item.classList.add("message");
+        item.appendChild(userName);
+        item.appendChild(message);
+        item.appendChild(timeInfo);
+        messages.appendChild(item);
+        socket.auth.serverOffset = serverOffset;
+        messages.scrollTop = messages.scrollHeight;
+      });
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (input.value) {
+          socket.emit("chat message", input.value, timeMessage);
+          input.value = "";
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <section class="client">
+      <div class="messages"></div>
+      <form class="form">
+        <input type="text" placeholder="add you message" class="input" />
+        <button type="submit" class="send">></button>
+      </form>
+    </section>
+  </body>
+</html>
