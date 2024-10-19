@@ -42,6 +42,7 @@
         max-width: 80%;
         word-wrap: break-word;
         display: flex;
+        flex-direction: column;
         list-style-type: none;
         font-family: cursive;
         padding: 3px 10px;
@@ -50,17 +51,20 @@
         color: white;
       }
 
-      small:first {
+      .username {
         font-weight: bold;
         font-size: 12 px;
       }
-      small:last-of-type {
+      .timeInfo {
         font-size: 11px;
       }
 
       .you {
+        .username {
+          display: none;
+        }
         align-self: flex-end;
-        background-color: rgba(61, 106, 231, 0.644);
+        background-color: rgba(6, 88, 20, 0.644);
         border-top-right-radius: 20px;
         border-top-left-radius: 20px;
         border-bottom-left-radius: 20px;
@@ -157,10 +161,12 @@
       const client = document.querySelector(".client");
 
       socket.on("chat message", (msg, serverOffset, username, time) => {
-        const item = document.createElement("span");
+        const item = document.createElement("div");
         const message = document.createElement("p");
         const userName = document.createElement("small");
+        userName.classList.add("username");
         const timeInfo = document.createElement("small");
+        timeInfo.classList.add("timeInfo");
         timeInfo.textContent = time;
         message.textContent = msg;
         userName.textContent = username;
